@@ -10,16 +10,32 @@
     <div class="login-card">
         <div class="login-header">
             <i class="fas fa-book-reader fa-3x"></i>
-            <h2>Lib Mng Login</h2>
-            <p>Enter your credentials to access the system</p>
+            <h2>Lib Mng System</h2>
+            <p id="form-subtitle">Welcome back! Please login to your account.</p>
         </div>
         
+        <div class="role-tabs" id="roleTabs">
+            <button class="role-tab active" onclick="switchRole('member', this)">Member</button>
+            <button class="role-tab" onclick="switchRole('admin', this)">Admin</button>
+        </div>
+
         <form id="loginForm" action="dashboard.html"> 
             <div class="input-group">
-                <label for="regNum">Registration / Security Number</label>
+                <label for="loginId">Reg Number / Email / Phone</label>
                 <div class="input-wrapper">
-                    <i class="fas fa-id-badge"></i>
-                    <input type="text" id="regNum" placeholder="e.g. LIB-2024-001" required>
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginId" placeholder="Enter ID, Email or Phone" required>
+                </div>
+            </div>
+
+            <div class="input-group otp-group">
+                <label for="otp">OTP (Sent to Email/Phone)</label>
+                <div class="otp-wrapper">
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="text" id="otp" placeholder="Enter OTP">
+                    </div>
+                    <button type="button" class="otp-btn" onclick="alert('OTP Sent!')">Get OTP</button>
                 </div>
             </div>
 
@@ -31,12 +47,88 @@
                 </div>
             </div>
 
-            <button type="submit" class="login-btn">Secure Login</button>
+            <button type="submit" class="login-btn" id="loginSubmitBtn">Member Login</button>
             
             <div class="login-footer">
                 <a href="#">Forgot Password?</a>
+                <p>New Member? <a href="#" onclick="toggleForms('signup')">Create an account</a></p>
+            </div>
+        </form>
+
+        <form id="signupForm" action="dashboard.html" style="display: none;">
+            <div class="input-group">
+                <label for="regName">Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="regName" placeholder="John Doe" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="regContact">Email or Phone Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="text" id="regContact" placeholder="email@college.edu or Phone" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="regPassword">Create Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPassword" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn signup-btn">Register Account</button>
+            
+            <div class="login-footer">
+                <p>Already have an account? <a href="#" onclick="toggleForms('login')">Sign In here</a></p>
             </div>
         </form>
     </div>
+
+    <script>
+        let currentRole = 'member';
+
+        // Switch between Admin and Member
+        function switchRole(role, element) {
+            currentRole = role;
+            
+            // Update active tab styling
+            document.querySelectorAll('.role-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+
+            // Change button text based on role
+            const btn = document.getElementById('loginSubmitBtn');
+            if(role === 'admin') {
+                btn.innerHTML = 'Admin Login';
+                btn.style.backgroundColor = '#e74c3c'; // Red for admin
+            } else {
+                btn.innerHTML = 'Member Login';
+                btn.style.backgroundColor = '#3498db'; // Blue for member
+            }
+        }
+
+        // Toggle between Login and Sign Up forms
+        function toggleForms(formType) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const roleTabs = document.getElementById('roleTabs');
+            const subtitle = document.getElementById('form-subtitle');
+
+            if (formType === 'signup') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                roleTabs.style.display = 'none'; // Admins don't sign up here
+                subtitle.innerText = "Create a new library account.";
+            } else {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                roleTabs.style.display = 'flex';
+                subtitle.innerText = "Welcome back! Please login to your account.";
+            }
+        }
+    </script>
 </body>
 </html>
