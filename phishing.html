@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phishing Website Detection</title>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    /* Global Styling */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      width: 100%;
+      padding: 18px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: bold;
+      color: #38f5ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 0 12px #38f5ff;
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #38f5ff; }
+      to { text-shadow: 0 0 25px #00f0ff; }
+    }
+
+    /* Container */
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 650px;
+      margin: 25px 0;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56,245,255,0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+      animation: fadeInUp 0.8s ease forwards;
+      opacity: 0;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 40px rgba(56,245,255,0.6);
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .card h2 {
+      margin-bottom: 18px;
+      font-size: 22px;
+      color: #f472b6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 0 8px #f472b6;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      text-align: left;
+      color: #cbd5e1;
+    }
+
+    input[type="file"], input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      margin-bottom: 16px;
+      outline: none;
+      box-shadow: inset 0 0 8px rgba(56,245,255,0.4);
+      transition: box-shadow 0.3s;
+    }
+    input:focus {
+      box-shadow: 0 0 12px #38f5ff, inset 0 0 8px rgba(56,245,255,0.6);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6, #9333ea);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.3s, background-position 0.5s;
+      background-size: 300% 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background-position: right center;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      margin: 15px auto;
+      border: 5px solid rgba(255,255,255,0.2);
+      border-top: 5px solid #38f5ff;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Result box */
+    .result-box {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: left;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1);
+      animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .benign { background-color: rgba(16,185,129,0.2); color: #10b981; text-shadow: 0 0 6px #10b981; }
+    .phishing { background-color: rgba(139,92,246,0.2); color: #a78bfa; text-shadow: 0 0 6px #a78bfa; }
+    .malware { background-color: rgba(239,68,68,0.2); color: #f87171; text-shadow: 0 0 6px #f87171; }
+    .defacement { background-color: rgba(245,158,11,0.2); color: #fbbf24; text-shadow: 0 0 6px #fbbf24; }
+    .unknown { background-color: rgba(148,163,184,0.2); color: #cbd5e1; }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 14px;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.6);
+    }
+  </style>
+
+  <script>
+    function showSpinner(formId, spinnerId) {
+      document.getElementById(spinnerId).style.display = 'block';
+      setTimeout(() => {
+        document.getElementById(spinnerId).style.display = 'none';
+      }, 3000);
+    }
+  </script>
+</head>
+<body>
+  <div class="navbar">
+    <h1><i class="fas fa-shield-alt"></i> PHISHING WEBSITE DETECTOR</h1>
+  </div>
+
+  <div class="container">
+    <!-- File Upload -->
+    <div class="card">
+      <h2><i class="fas fa-file-alt"></i> Malicious File Check</h2>
+      <form action="/scam/" method="post" enctype="multipart/form-data" onsubmit="showSpinner('fileForm', 'fileSpinner')">
+        <label for="file">Upload a file (PDF/TXT only):</label>
+        <input type="file" name="file" required>
+        <button type="submit"><i class="fas fa-upload"></i> Analyze</button>
+        <div id="fileSpinner" class="spinner"></div>
+      </form>
+      {% if message %}
+        <div class="result-box">{{ message }}</div>
+      {% endif %}
+    </div>
+    <!-- URL Detection -->
+    <div class="card">
+      <h2><i class="fas fa-link"></i> URL Threat Detection</h2>
+      <form method="post" action="/predict" onsubmit="showSpinner('urlForm', 'urlSpinner')">
+        <label for="url">Enter URL:</label>
+        <input type="text" name="url" placeholder="https://example.com" required>
+        <button type="submit"><i class="fas fa-search"></i> Classify</button>
+        <div id="urlSpinner" class="spinner"></div>
+      </form>
+      {% if predicted_class %}
+        <div class="result-box {{ predicted_class.lower() }}">
+          <p><strong>URL:</strong> {{ input_url }}</p>
+          <p><strong>Predicted Class:</strong> {{ predicted_class }}</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer>
+    ⚡ Protect | Advanced Threat Detection | Securing the Web 🌐
+  </footer>
+</body>
+</html>

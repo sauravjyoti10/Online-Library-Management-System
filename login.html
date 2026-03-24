@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Hungry Minds LMS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-book-reader fa-3x"></i>
+            <h2>Lib Mng Login</h2>
+            <p>Enter your credentials to access the system</p>
+        </div>
+        
+        <form id="loginForm" action="dashboard.html"> 
+            <div class="input-group">
+                <label for="regNum">Registration / Security Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-badge"></i>
+                    <input type="text" id="regNum" placeholder="e.g. LIB-2024-001" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">Secure Login</button>
+            
+            <div class="login-footer">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

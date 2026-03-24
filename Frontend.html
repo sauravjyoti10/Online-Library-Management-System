@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lib Mng - Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fas fa-book-reader"></i> Lib Mng
+            </div>
+            
+            <div class="admin-profile">
+                <img src="worker-employee-businessman-avatar-profile-icon-vector.jpg" alt="Admin Avatar">
+                <div class="admin-info">
+                    <p>Admin</p>
+                    <span class="badge-red">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+                <div class="nav-item"><i class="fas fa-receipt"></i> Receipts</div>
+                <div class="nav-item"><i class="fas fa-book"></i> Mng Library</div>
+                <div class="nav-item"><i class="fas fa-users"></i> Mng User</div>
+                <div class="nav-item"><i class="fas fa-chart-bar"></i> Reports</div>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Home <small>WY: 2020-2021</small></span>
+                    <span class="badge-green">License Active</span>
+                </div>
+                <div class="header-right">
+                    <i class="fas fa-cog"></i>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <h1>Dashboard <small>Home / Dashboard</small></h1>
+                
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div class="icon-box blue"><i class="fas fa-book"></i></div>
+                        <div class="stat-info"><span>T.Books</span><strong>47</strong></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box red"><i class="fas fa-money-bill"></i></div>
+                        <div class="stat-info"><span>C.Fine</span><strong>$ 0</strong></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box green"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="stat-info"><span>C.Borrowed</span><strong>2</strong></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box yellow"><i class="fas fa-users"></i></div>
+                        <div class="stat-info"><span>Users</span><strong>4</strong></div>
+                    </div>
+                </div>
+
+                <div class="visual-row">
+                    <div class="chart-container">
+                        <h3>Visitor Stats</h3>
+                        <canvas id="visitorChart"></canvas>
+                    </div>
+                    <div class="image-container">
+                        <h3>Library Focus</h3>
+                        <img src="pexels-rickyrecap-1907785.jpg" alt="Library Shelves" class="library-img">
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
