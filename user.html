@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            <div class="admin-profile">
+                <img src="worker-employee-businessman-avatar-profile-icon-vector.jpg" alt="Admin Avatar">
+                <div class="admin-info">
+                    <p>Admin</p>
+                    <span class="badge-red">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="Frontend.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="book.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-book"></i> Manage Library
+                </a>
+                <a href="user.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-users"></i> Manage User
+                </a>
+                <a href="issue-return.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-exchange-alt"></i> Issue / Return
+                </a>
+                </a>
+                <a href="report.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Manage Users (Members)</span>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>Member Directory</h1>
+                    <button class="add-btn" onclick="openUserModal()"><i class="fas fa-user-plus"></i> Register Member</button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Reg Number</th>
+                                <th>Member Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr>
+                                <td>LIB-2026-042</td>
+                                <td><strong>Jane Smith</strong></td>
+                                <td>jane.smith@college.edu</td>
+                                <td>+1 555-0198</td>
+                                <td>Computer Science</td>
+                                <td><span class="status-badge available">Active</span></td>
+                                <td class="actions">
+                                    <button class="action-btn edit" title="Edit Details"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete" title="Remove Member"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="addUserModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Register New Member</h2>
+                <i class="fas fa-times close-icon" onclick="closeUserModal()"></i>
+            </div>
+            <form id="addUserForm" onsubmit="submitUser(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Member Name</label>
+                        <input type="text" id="userName" required placeholder="e.g. John Doe">
+                    </div>
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="userEmail" required placeholder="john@college.edu">
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="userPhone" required placeholder="+1 234-567-8900">
+                    </div>
+                    <div class="input-group">
+                        <label>Department</label>
+                        <select id="userDept" required>
+                            <option value="">Select Department...</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Electrical Engineering">Electrical Engineering</option>
+                            <option value="Civil Engineering">Civil Engineering</option>
+                            <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Literature">Literature</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="save-btn">Register Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = []; // Holds members for editing
+        let editingRegNum = null; // Tells form if Adding or Editing
+        const userModal = document.getElementById('addUserModal');
+
+        function openUserModal() {
+            userModal.style.display = 'flex';
+        }
+
+        function closeUserModal() {
+            userModal.style.display = 'none';
+            document.getElementById('addUserForm').reset();
+        }
+
+        // Generate a random registration number for the demo
+        function generateRegNumber() {
+            return 'LIB-2026-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        }
+
+        // Updated submitUser function to talk to the Backend API
+        async function submitUser(event) {
+            event.preventDefault(); 
+            
+            const userData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                phone: document.getElementById('userPhone').value,
+                dept: document.getElementById('userDept').value
+            };
+
+            // If we are adding a NEW user, we need to generate an ID and include it
+            if (!editingRegNum) {
+                userData.regNum = generateRegNumber();
+            }
+
+            const url = editingRegNum ? `http://localhost:3000/api/users/${editingRegNum}` : 'http://localhost:3000/api/users';
+            const methodType = editingRegNum ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: methodType,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Success: " + result.message);
+                    closeUserModal(); 
+                    fetchUsers(); 
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                console.error("Connection error:", error);
+                alert("Could not connect to the server.");
+            }
+        }
+
+        function openEditUserModal(regNum) {
+            const userToEdit = allUsers.find(u => u.reg_number === regNum);
+            if (!userToEdit) return;
+
+            // Fill the form
+            document.getElementById('userName').value = userToEdit.name;
+            document.getElementById('userEmail').value = userToEdit.email;
+            document.getElementById('userPhone').value = userToEdit.phone;
+            document.getElementById('userDept').value = userToEdit.department;
+
+            // Set variables and change UI text
+            editingRegNum = userToEdit.reg_number;
+            document.querySelector('.modal-header h2').innerText = "Edit Member Details";
+            document.querySelector('.save-btn').innerText = "Update Member";
+
+            userModal.style.display = 'flex';
+        }
+
+        // Update closeUserModal to reset everything
+        function closeUserModal() {
+            userModal.style.display = 'none';
+            document.getElementById('addUserForm').reset();
+            editingRegNum = null;
+            document.querySelector('.modal-header h2').innerText = "Register New Member";
+            document.querySelector('.save-btn').innerText = "Register Member";
+        }
+
+        // Function to delete a user
+        async function deleteUser(regNum) {
+            if (confirm(`Are you sure you want to completely remove member ${regNum}?`)) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/users/${regNum}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert(result.message);
+                        fetchUsers(); // Refresh the table automatically
+                    } else {
+                        alert("Error: " + result.error);
+                    }
+                } catch (error) {
+                    alert("Could not connect to the server.");
+                }
+            }
+        }
+
+        // NEW: Function to fetch and display members from the database
+        async function fetchUsers() {
+            try {
+                const response = await fetch('http://localhost:3000/api/users');
+                const users = await response.json();
+                allUsers = users;
+                
+                const tableBody = document.getElementById('userTableBody');
+                tableBody.innerHTML = ''; // Clear out dummy data
+
+                users.forEach(user => {
+                    const row = `
+                        <tr>
+                            <td>${user.reg_number}</td>
+                            <td><strong>${user.name}</strong></td>
+                            <td>${user.email}</td>
+                            <td>${user.phone}</td>
+                            <td>${user.department || 'N/A'}</td>
+                            <td><span class="status-badge available">Active</span></td>
+                            <td class="actions">
+                                <button class="action-btn edit" title="Edit Details" onclick="openEditUserModal('${user.reg_number}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" title="Remove Member" onclick="deleteUser('${user.reg_number}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        // Automatically load users when the page opens
+        window.onload = fetchUsers;
+    </script>
+</body>
+</html>

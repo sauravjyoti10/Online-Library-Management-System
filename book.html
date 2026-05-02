@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Books - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            <div class="admin-profile">
+                <img src="worker-employee-businessman-avatar-profile-icon-vector.jpg" alt="Admin Avatar">
+                <div class="admin-info">
+                    <p>Admin</p>
+                    <span class="badge-red">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="Frontend.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="book.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-book"></i> Manage Library
+                </a>
+                <a href="user.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-users"></i> Manage User
+                </a>
+                </a>
+                <a href="issue-return.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-exchange-alt"></i> Issue / Return
+                </a>
+                </a>
+                <a href="report.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Manage Books</span>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>Book Inventory</h1>
+                    <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Add New Book</button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ISBN</th>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookTableBody">
+                            <tr>
+                                <td>978-3-16-148410-0</td>
+                                <td><strong>Software Engineering</strong></td>
+                                <td>Ian Sommerville</td>
+                                <td>Computer Science</td>
+                                <td>5</td>
+                                <td><span class="status-badge available">Available</span></td>
+                                <td class="actions">
+                                    <button class="action-btn edit" title="Update"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="addBookModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Book</h2>
+                <i class="fas fa-times close-icon" onclick="closeModal()"></i>
+            </div>
+            <form id="addBookForm" onsubmit="submitBook(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Book Title</label>
+                        <input type="text" id="bookTitle" required placeholder="e.g. Clean Code">
+                    </div>
+                    <div class="input-group">
+                        <label>Author</label>
+                        <input type="text" id="bookAuthor" required placeholder="e.g. Robert C. Martin">
+                    </div>
+                    <div class="input-group">
+                        <label>ISBN Number</label>
+                        <input type="text" id="bookISBN" required placeholder="XXX-X-XX-XXXXXX-X">
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="bookCategory" required>
+                            <option value="">Select Category...</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Electrical Engineering">Electrical Engineering</option>
+                            <option value="Civil Engineering">Civil Engineering</option>
+                            <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            <option value="Fiction">Fiction</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Rom-Com">Rom-Com</option>
+                            <option value="Thriller">Thriller</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Literature">Literature</option>
+                            <option value="History">History</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Reference">Reference</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Quantity</label>
+                        <input type="number" id="bookQty" min="1" required placeholder="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="save-btn">Save Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allBooks = []; // This will hold our books so we can easily find them to edit
+        let editingIsbn = null; // This tells the form if we are adding or editing
+        const modal = document.getElementById('addBookModal');
+
+        function openModal() {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            document.getElementById('addBookForm').reset();
+        }
+
+        // Function to open the modal and fill it with the book's current details
+        function openEditModal(isbn) {
+            // Find the specific book in our global array
+            const bookToEdit = allBooks.find(b => b.isbn === isbn);
+            if (!bookToEdit) return;
+
+            // Fill the form fields with the book's data
+            document.getElementById('bookTitle').value = bookToEdit.title;
+            document.getElementById('bookAuthor').value = bookToEdit.author;
+            document.getElementById('bookISBN').value = bookToEdit.isbn;
+            document.getElementById('bookCategory').value = bookToEdit.category;
+            document.getElementById('bookQty').value = bookToEdit.quantity;
+
+            // Set our tracking variable and change the modal title
+            editingIsbn = bookToEdit.isbn;
+            document.querySelector('.modal-header h2').innerText = "Edit Book Details";
+            document.querySelector('.save-btn').innerText = "Update Book";
+
+            // Open the modal
+            modal.style.display = 'flex';
+        }
+
+        // Make sure closeModal resets our tracking variables!
+        function closeModal() {
+            modal.style.display = 'none';
+            document.getElementById('addBookForm').reset();
+            editingIsbn = null;
+            document.querySelector('.modal-header h2').innerText = "Add New Book";
+            document.querySelector('.save-btn').innerText = "Save Book";
+        }
+
+        // Updated submitBook function to talk to the Backend API
+        // Smart submit function handles BOTH Add and Edit
+        async function submitBook(event) {
+            event.preventDefault(); 
+            
+            const bookData = {
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                isbn: document.getElementById('bookISBN').value,
+                category: document.getElementById('bookCategory').value,
+                qty: document.getElementById('bookQty').value
+            };
+
+            // Determine if we are Adding (POST) or Editing (PUT)
+            const url = editingIsbn ? `http://localhost:3000/api/books/${editingIsbn}` : 'http://localhost:3000/api/books';
+            const methodType = editingIsbn ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: methodType,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Success: " + result.message);
+                    closeModal(); 
+                    fetchBooks(); // Refresh the table!
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                console.error("Connection error:", error);
+                alert("Could not connect to the server.");
+            }
+        }
+
+        // Function to delete a user
+        async function deleteUser(regNum) {
+            if (confirm(`Are you sure you want to completely remove member ${regNum}?`)) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/users/${regNum}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert(result.message);
+                        fetchUsers(); // Instantly refresh the table!
+                    } else {
+                        alert("Error: " + result.error);
+                    }
+                } catch (error) {
+                    alert("Could not connect to the server.");
+                }
+            }
+        }
+
+        // Function to delete a book
+        async function deleteBook(isbn) {
+            if (confirm(`Are you sure you want to delete the book with ISBN: ${isbn}?`)) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/books/${isbn}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert(result.message);
+                        fetchBooks(); // Refresh the table automatically
+                    } else {
+                        alert("Error: " + result.error);
+                    }
+                } catch (error) {
+                    alert("Could not connect to the server.");
+                }
+            }
+        }
+
+        // NEW: Function to fetch and display books from the database
+        // UPGRADED: Bulletproof function to fetch and display books
+        async function fetchBooks() {
+            const tableBody = document.getElementById('bookTableBody');
+            // 1. Show a loading message first
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #555;">Loading books from database...</td></tr>';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/books');
+                const books = await response.json();
+                allBooks = books; // Save to our global array
+                // 2. Handle Server Errors (e.g., Database disconnected)
+                if (!response.ok) {
+                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #e74c3c; font-weight: bold;">Backend Error: ${books.error}</td></tr>`;
+                    return;
+                }
+
+                // 3. Handle Empty Database
+                if (!Array.isArray(books) || books.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #777;">No books found in the database. Click 'Add New Book' to start!</td></tr>`;
+                    return;
+                }
+
+                // 4. Success! Clear the loading message and draw the table
+                tableBody.innerHTML = ''; 
+
+                books.forEach(book => {
+                    // Safe fallback in case a book doesn't have a status set
+                    const displayStatus = book.status || 'Available'; 
+                    const statusClass = displayStatus === 'Available' ? 'available' : 'out-of-stock';
+                    
+                    const row = `
+                        <tr>
+                            <td>${book.isbn}</td>
+                            <td><strong>${book.title}</strong></td>
+                            <td>${book.author}</td>
+                            <td>${book.category}</td>
+                            <td>${book.quantity}</td>
+                            <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
+                            <td class="actions">
+                                <button class="action-btn edit" title="Update" onclick="openEditModal('${book.isbn}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" title="Delete" onclick="deleteBook('${book.isbn}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row; 
+                });
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                // 5. Handle Network Errors (e.g., Node server is turned off)
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #e74c3c; font-weight: bold;">Network Error: Cannot connect to server. Is Node running?</td></tr>`;
+            }
+        }
+
+        // Automatically load books from the database when the page opens!
+        window.onload = fetchBooks;
+    </script>
+</body>
+</html>

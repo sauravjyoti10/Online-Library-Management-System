@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Books - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            
+            <div class="admin-profile">
+                <img src="default-avatar.png" alt="User Avatar" id="sidebarUserIcon">
+                <div class="admin-info">
+                    <p id="sidebarUserName" style="font-weight: bold; margin-bottom: 5px;">Loading...</p>
+                    <span class="badge-green">Student Member</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-home"></i> My Dashboard
+                </a>
+                <a href="search.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-search"></i> Search Books
+                </a>
+                <a href="my-book.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-book-open"></i> My Borrowed Books
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Library Catalog</span>
+                </div>
+                <div class="header-right">
+                    <i class="fas fa-bell" style="margin-right: 15px; cursor: pointer;"></i>
+                    <i class="fas fa-key" style="margin-right: 15px; cursor: pointer;" title="Change Password" onclick="openPasswordModal()"></i>
+                    
+                    <i class="fas fa-sign-out-alt" style="cursor: pointer;" title="Log Out" onclick="window.location.href='login.html'"></i>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>Search the Library</h1>
+                </div>
+
+                <div class="search-container">
+                    <div class="search-box">
+                        <select id="searchFilter" class="search-select">
+                            <option value="all">All Fields</option>
+                            <option value="title">Book Title</option>
+                            <option value="author">Author</option>
+                            <option value="category">Category</option>
+                        </select>
+                        <input type="text" id="searchInput" placeholder="Enter keywords to find your next book..." onkeyup="performSearch()">
+                        <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #2c3136;" id="resultText">Available Books</h3>
+                
+                <div class="book-grid" id="bookResults">
+                    </div>
+
+            </section>
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Change Password</h2>
+                <i class="fas fa-times close-icon" onclick="closePasswordModal()"></i>
+            </div>
+            <form id="passwordForm" onsubmit="changePassword(event)">
+                <div class="form-grid" style="grid-template-columns: 1fr;"> <div class="input-group">
+                        <label>Reg Number or Email</label>
+                        <input type="text" id="cpId" required placeholder="e.g. LIB-2026-087">
+                    </div>
+                    <div class="input-group">
+                        <label>Current Password</label>
+                        <input type="password" id="cpOld" required placeholder="Enter current password (or phone)">
+                    </div>
+                    <div class="input-group">
+                        <label>New Password</label>
+                        <input type="password" id="cpNew" required placeholder="Enter new password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit" class="save-btn" style="background: #27ae60;">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // We will store the database books here so we can filter them locally
+        let libraryBooks = [];
+
+        // Function to display books in the grid
+        function displayBooks(books) {
+            const container = document.getElementById('bookResults');
+            container.innerHTML = ''; // Clear current results
+
+            if (books.length === 0) {
+                container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #777;">No books found matching your search.</p>`;
+                return;
+            }
+
+            books.forEach(book => {
+                // Determine styling based on availability
+                const isAvailable = book.quantity > 0 && book.status === 'Available';
+                const statusText = isAvailable ? 'Available' : 'Out of Stock';
+                const statusColor = isAvailable ? '#27ae60' : '#e74c3c';
+                const statusBg = isAvailable ? '#e8f8f5' : '#f8d7da';
+                
+                const card = `
+                    <div class="book-card">
+                        <div class="book-icon"><i class="fas fa-book"></i></div>
+                        <div class="book-details">
+                            <h4>${book.title}</h4>
+                            <p class="author"><i class="fas fa-user-edit"></i> ${book.author}</p>
+                            <p class="category"><i class="fas fa-tags"></i> ${book.category}</p>
+                            <span class="status-badge" style="background: ${statusBg}; color: ${statusColor}; margin-top: 10px; display: inline-block;">
+                                ${statusText} (${book.quantity} left)
+                            </span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Fetch the real books from the MySQL database
+        async function fetchRealBooks() {
+            try {
+                const response = await fetch('http://localhost:3000/api/books');
+                libraryBooks = await response.json(); // Save to our global array
+                displayBooks(libraryBooks); // Display them all initially
+            } catch (error) {
+                console.error("Error fetching catalog:", error);
+                document.getElementById('bookResults').innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: red;">Failed to load the catalog. Ensure the server is running.</p>`;
+            }
+        }
+
+        // Function to filter books based on user input
+        function performSearch() {
+            const filter = document.getElementById('searchFilter').value;
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const resultText = document.getElementById('resultText');
+
+            const filteredBooks = libraryBooks.filter(book => {
+                if (filter === 'title') return book.title.toLowerCase().includes(query);
+                if (filter === 'author') return book.author.toLowerCase().includes(query);
+                if (filter === 'category') return book.category.toLowerCase().includes(query);
+                
+                // If "All Fields"
+                return book.title.toLowerCase().includes(query) || 
+                       book.author.toLowerCase().includes(query) || 
+                       book.category.toLowerCase().includes(query);
+            });
+
+            if (query !== "") {
+                resultText.innerText = `Search Results for "${query}"`;
+            } else {
+                resultText.innerText = "Available Books";
+            }
+
+            displayBooks(filteredBooks);
+        }
+
+        // ==========================================
+        // UNIFIED ONLOAD FUNCTION
+        // ==========================================
+        window.onload = () => {
+            // Task 1: Security and Profile Check
+            const savedUser = localStorage.getItem('loggedInUser');
+            
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                // Set their real name
+                document.getElementById('sidebarUserName').innerText = user.name;
+                
+                // Generate a logo using the first letter of their name
+                const firstLetter = user.name.charAt(0).toUpperCase();
+                document.getElementById('sidebarUserIcon').src = `https://ui-avatars.com/api/?name=${firstLetter}&background=3498db&color=fff&rounded=true`;
+            } else {
+                // If they didn't log in properly, kick them back to the login page!
+                window.location.href = 'login.html';
+                return; // Stop running any more code
+            }
+
+            // Task 2: Fetch the books now that we know the user is secure!
+            fetchRealBooks();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Issue & Return - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            <div class="admin-profile">
+                <img src="worker-employee-businessman-avatar-profile-icon-vector.jpg" alt="Admin Avatar">
+                <div class="admin-info">
+                    <p>Admin</p>
+                    <span class="badge-red">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="Frontend.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="book.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-book"></i> Manage Library
+                </a>
+                <a href="user.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-users"></i> Manage User
+                </a>
+                <a href="issue-return.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-exchange-alt"></i> Issue / Return
+                </a>
+                <a href="report.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Issue & Return Books</span>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>Transaction Desk</h1>
+                </div>
+
+                <div class="transaction-container">
+                    
+                    <div class="role-tabs" id="actionTabs" style="max-width: 600px; margin-bottom: 20px;">
+                        <button class="role-tab active" onclick="switchAction('issue', this)">Issue Book</button>
+                        <button class="role-tab" onclick="switchAction('return', this)">Return Book</button>
+                    </div>
+
+                    <div class="form-card" id="issueFormCard">
+                        <form id="issueForm" onsubmit="processIssue(event)">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label>Member Reg Number</label>
+                                    <input type="text" id="issueMemberId" required placeholder="e.g. LIB-2026-042">
+                                </div>
+                                <div class="input-group">
+                                    <label>Book ISBN</label>
+                                    <input type="text" id="issueBookIsbn" required placeholder="XXX-X-XX-XXXXXX-X">
+                                </div>
+                                <div class="input-group">
+                                    <label>Issue Date</label>
+                                    <input type="date" id="issueDate" required> 
+                                </div>
+                                <div class="input-group">
+                                    <label>Due Date</label>
+                                    <input type="date" id="dueDate" required>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <button type="submit" class="save-btn" style="background: #3498db;">Issue Book</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="form-card" id="returnFormCard" style="display: none;">
+                        <form id="returnForm" onsubmit="processReturn(event)">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label>Book ISBN</label>
+                                    <input type="text" id="returnBookIsbn" required placeholder="XXX-X-XX-XXXXXX-X">
+                                </div>
+                                <div class="input-group">
+                                    <label>Member Reg Number</label>
+                                    <input type="text" id="returnMemberId" required placeholder="e.g. LIB-2026-042">
+                                </div>
+                                <div class="input-group">
+                                    <label>Return Date</label>
+                                    <input type="date" id="returnDate" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Calculated Fine ($5/day)</label>
+                                    <input type="text" id="calculatedFine" readonly value="$0" style="background: #f8d7da; color: #721c24; font-weight: bold;">
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; display: flex; gap: 15px; align-items: center;">
+                                <button type="button" class="cancel-btn" onclick="calculateFine()">Calculate Fine</button>
+                                <button type="submit" class="save-btn" style="background: #27ae60;">Process Return</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 15px; color: #2c3136;">Recent Transactions</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Member</th>
+                                <th>Book ISBN</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTableBody">
+                            <tr>
+                                <td>TRX-001</td>
+                                <td>LIB-2026-042</td>
+                                <td>978-3-16-148410-0</td>
+                                <td><span class="status-badge" style="background: #e8f8f5; color: #27ae60;">Issued</span></td>
+                                <td>2026-03-31</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 1. Set dates automatically when the page loads
+        function setDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('issueDate').value = today;
+            document.getElementById('returnDate').value = today;
+            
+            // Auto-set due date to 14 days from today
+            let dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 14);
+            document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+        }
+
+        // 2. Tab Switching Logic
+        function switchAction(action, element) {
+            document.querySelectorAll('#actionTabs .role-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+
+            if(action === 'issue') {
+                document.getElementById('issueFormCard').style.display = 'block';
+                document.getElementById('returnFormCard').style.display = 'none';
+            } else {
+                document.getElementById('issueFormCard').style.display = 'none';
+                document.getElementById('returnFormCard').style.display = 'block';
+            }
+        }
+
+        // 3. Interactive Fine Calculation ($5 per day late)
+        function calculateFine() {
+            const daysLate = prompt("Enter the number of days this book is overdue:\n(Enter 0 if returned on time)", "0");
+            
+            if (daysLate !== null && !isNaN(daysLate)) {
+                const totalFine = parseInt(daysLate) * 5; // $5 per day per SRS 3.5
+                document.getElementById('calculatedFine').value = "$" + totalFine;
+            }
+        }
+
+        // 4. API Request: Issue Book
+        async function processIssue(event) {
+            event.preventDefault();
+            
+            const issueData = {
+                memberId: document.getElementById('issueMemberId').value,
+                bookIsbn: document.getElementById('issueBookIsbn').value,
+                issueDate: document.getElementById('issueDate').value,
+                dueDate: document.getElementById('dueDate').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/issue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(issueData)
+                });
+                
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Success: " + result.message + "\nTransaction ID: " + result.trxId);
+                    document.getElementById('issueForm').reset();
+                    setDates(); // Reset the dates back to today
+                    loadRecentTransactions(); // Refresh the table
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                alert("Could not connect to the server.");
+            }
+        }
+
+        // 5. API Request: Return Book
+        async function processReturn(event) {
+            event.preventDefault();
+            
+            const returnData = {
+                memberId: document.getElementById('returnMemberId').value,
+                bookIsbn: document.getElementById('returnBookIsbn').value,
+                returnDate: document.getElementById('returnDate').value,
+                fine: document.getElementById('calculatedFine').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/return', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(returnData)
+                });
+                
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Success: " + result.message + "\nTransaction ID: " + result.trxId);
+                    document.getElementById('returnForm').reset();
+                    document.getElementById('calculatedFine').value = "$0";
+                    setDates(); // Reset dates
+                    loadRecentTransactions(); // Refresh the table
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                alert("Could not connect to the server.");
+            }
+        }
+
+        // 6. Fetch and display live transactions from the database
+        async function loadRecentTransactions() {
+            try {
+                const response = await fetch('http://localhost:3000/api/transactions');
+                const transactions = await response.json();
+                
+                const tableBody = document.getElementById('transactionTableBody');
+                tableBody.innerHTML = '';
+
+                // We only want to show the 5 most recent transactions here
+                const recentTrx = transactions.slice(0, 5);
+
+                if (recentTrx.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #777;">No recent transactions.</td></tr>`;
+                    return;
+                }
+
+                recentTrx.forEach(trx => {
+                    const actionColor = trx.action === 'Issued' ? '#27ae60' : '#3498db';
+                    const actionBg = trx.action === 'Issued' ? '#e8f8f5' : '#e1f0fa';
+                    const dateObj = new Date(trx.transaction_date).toLocaleDateString();
+
+                    const row = `
+                        <tr>
+                            <td><strong>${trx.transaction_id}</strong></td>
+                            <td>${trx.member_reg_number}</td>
+                            <td>${trx.book_isbn}</td>
+                            <td><span class="status-badge" style="background: ${actionBg}; color: ${actionColor};">${trx.action}</span></td>
+                            <td>${dateObj}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching recent transactions:', error);
+            }
+        }
+
+        // Initialize the page on load
+        window.onload = () => {
+            setDates();
+            loadRecentTransactions();
+        };s
+    </script>
+</body>
+</html>

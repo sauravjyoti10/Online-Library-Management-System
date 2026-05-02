@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Special styles just for printing! */
+        @media print {
+            .sidebar, .top-header, .print-btn, .action-btn { display: none !important; }
+            .main-body { margin: 0; padding: 0; width: 100%; }
+            .content-padding { padding: 0; }
+            .stat-row { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            <div class="admin-profile">
+                <img src="worker-employee-businessman-avatar-profile-icon-vector.jpg" alt="Admin Avatar">
+                <div class="admin-info">
+                    <p>Admin</p>
+                    <span class="badge-red">Super Admin</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="Frontend.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="book.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;"><i class="fas fa-book"></i> Manage Library</a>
+                <a href="user.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;"><i class="fas fa-users"></i> Manage User</a>
+                <a href="issue-return.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;"><i class="fas fa-exchange-alt"></i> Issue / Return</a>
+                <a href="report.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;"><i class="fas fa-chart-bar"></i> Reports</a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>System Reports</span>
+                </div>
+                <div class="header-right" style="display: flex; align-items: center;">
+                    <button onclick="window.location.href='login.html'" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </button>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>Library Activity Report</h1>
+                    <button class="add-btn print-btn" onclick="window.print()" style="background: #34495e;"><i class="fas fa-print"></i> Print Report</button>
+                </div>
+                
+                <div class="stat-row" style="margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <div class="icon-box blue"><i class="fas fa-book"></i></div>
+                        <div class="stat-info"><span>Total Books</span><strong id="rep-books">0</strong></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box green"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="stat-info"><span>Currently Borrowed</span><strong id="rep-borrowed">0</strong></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box red"><i class="fas fa-money-bill"></i></div>
+                        <div class="stat-info"><span>Total Fines Collected</span><strong id="rep-fines">$0</strong></div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #2c3136;">Transaction History & Overdue Log</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Member Name</th>
+                                <th>Book Title</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                                <th>Fine / Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 1. Load the summary stats (same as Dashboard)
+        async function loadReportStats() {
+            try {
+                const response = await fetch('http://localhost:3000/api/dashboard-stats');
+                const stats = await response.json();
+                if (response.ok) {
+                    document.getElementById('rep-books').innerText = stats.totalBooks;
+                    document.getElementById('rep-borrowed').innerText = stats.borrowedBooks;
+                    document.getElementById('rep-fines').innerText = "$" + stats.totalFines;
+                }
+            } catch (error) {
+                console.error("Could not load stats:", error);
+            }
+        }
+
+        // 2. Load the transaction history
+        async function loadTransactions() {
+            try {
+                const response = await fetch('http://localhost:3000/api/transactions');
+                const transactions = await response.json();
+                
+                const tableBody = document.getElementById('reportTableBody');
+                tableBody.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No transactions found.</td></tr>`;
+                    return;
+                }
+
+                transactions.forEach(trx => {
+                    // Styling logic
+                    const actionColor = trx.action === 'Issued' ? '#27ae60' : '#3498db';
+                    const actionBg = trx.action === 'Issued' ? '#e8f8f5' : '#e1f0fa';
+                    
+                    // Format dates safely
+                    const dateObj = new Date(trx.transaction_date);
+                    const formattedDate = dateObj.toLocaleDateString();
+
+                    // Fine logic
+                    let fineDisplay = '-';
+                    if (trx.action === 'Returned' && trx.fine_amount > 0) {
+                        fineDisplay = `<span style="color: #e74c3c; font-weight: bold;">$${trx.fine_amount} Fine</span>`;
+                    } else if (trx.action === 'Issued') {
+                        // Check if it is overdue right now!
+                        const dueDate = new Date(trx.due_date);
+                        const today = new Date();
+                        if (today > dueDate) {
+                            fineDisplay = `<span style="color: #e74c3c; font-weight: bold;"><i class="fas fa-exclamation-circle"></i> OVERDUE</span>`;
+                        } else {
+                            fineDisplay = `<span style="color: #777;">Due: ${dueDate.toLocaleDateString()}</span>`;
+                        }
+                    }
+
+                    const row = `
+                        <tr>
+                            <td><strong>${trx.transaction_id}</strong></td>
+                            <td>${trx.member_name || 'Unknown User'}</td>
+                            <td>${trx.book_title || 'Unknown Book'}</td>
+                            <td><span class="status-badge" style="background: ${actionBg}; color: ${actionColor};">${trx.action}</span></td>
+                            <td>${formattedDate}</td>
+                            <td>${fineDisplay}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            }
+        }
+
+        // Run both functions when the page loads
+        window.onload = () => {
+            loadReportStats();
+            loadTransactions();
+        };
+    </script>
+</body>
+</html>

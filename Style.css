@@ -177,3 +177,254 @@ h1 small { font-size: 12px; color: #888; }
     margin-top: 15px;
     color: #555;
 }
+
+
+/* --- Book Management Specific Styles --- */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.add-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.add-btn:hover { background: #219653; }
+
+/* Data Table Styling */
+.table-container {
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.data-table th, .data-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.data-table th {
+    background: #f8f9fa;
+    color: #555;
+    font-weight: 600;
+}
+
+.data-table tbody tr:hover { background: #fcfcfc; }
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.status-badge.available { background: #e8f8f5; color: #27ae60; }
+
+.actions .action-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    transition: 0.2s;
+}
+.actions .edit { color: #3498db; }
+.actions .delete { color: #e74c3c; }
+.actions .action-btn:hover { opacity: 0.7; }
+
+/* Modal (Pop-up) Styling */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.close-icon { cursor: pointer; color: #777; font-size: 20px; }
+.close-icon:hover { color: #e74c3c; }
+
+.form-grid { display: grid; gap: 15px; }
+
+.form-grid input, .form-grid select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-footer {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cancel-btn, .save-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.cancel-btn { background: #ecf0f1; color: #555; }
+.save-btn { background: #3498db; color: white; }
+
+/* --- Issue/Return Form Card Styling --- */
+.form-card {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    max-width: 800px;
+}
+
+/* --- Search Page Specific Styles --- */
+
+.search-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f4f7f6;
+    color: #555;
+    font-weight: bold;
+    outline: none;
+}
+
+#searchInput {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.search-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.search-btn:hover {
+    background: #2980b9;
+}
+
+/* Book Results Grid */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.book-icon {
+    width: 60px;
+    height: 60px;
+    background: #f4f7f6;
+    color: #3498db;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    margin-bottom: 15px;
+}
+
+.book-details h4 {
+    margin: 0 0 10px 0;
+    color: #2c3136;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.book-details p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #777;
+}
+
+.book-details p i {
+    width: 15px;
+    color: #aaa;
+}

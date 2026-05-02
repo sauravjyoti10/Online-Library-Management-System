@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Borrowed Books - Lib Mng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> Lib Mng</div>
+            
+            <div class="admin-profile">
+                <img src="" alt="User Avatar" id="sidebarUserIcon" style="background: #3498db;">
+                <div class="admin-info">
+                    <p id="sidebarUserName" style="font-weight: bold; margin-bottom: 5px;">Loading...</p>
+                    <span class="badge-green">Student Member</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="search.html" class="nav-item" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-search"></i> Search Books
+                </a>
+                <a href="my-book.html" class="nav-item active" style="text-decoration: none; color: inherit; display: block;">
+                    <i class="fas fa-book-open"></i> My Borrowed Books
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-header">
+                <div class="header-left">
+                    <i class="fas fa-bars"></i>
+                    <span>Member Portal</span>
+                </div>
+                <div class="header-right">
+                    <button onclick="logoutUser()" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </button>
+                </div>
+            </header>
+
+            <section class="content-padding">
+                <div class="page-header">
+                    <h1>My Borrowed Books <small>Keep track of your due dates and fines.</small></h1>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Action/Status</th>
+                                <th>Transaction Date</th>
+                                <th>Due Date / Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myBooksTableBody">
+                            <tr><td colspan="5" style="text-align:center; color: #777;">Loading your library history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 1. Secure Logout Function
+        function logoutUser() {
+            // Completely erase the user's session from the browser's memory
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+        }
+
+        // 2. Load the Page Data
+        window.onload = async () => {
+            // --- SECURITY CHECK: Are they logged in? ---
+            const savedUser = localStorage.getItem('loggedInUser');
+            
+            if (!savedUser) {
+                // Kick them back to the login screen if they bypassed it
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(savedUser);
+
+            // --- INJECT SIDEBAR DATA ---
+            document.getElementById('sidebarUserName').innerText = user.name;
+            const firstLetter = user.name.charAt(0).toUpperCase();
+            document.getElementById('sidebarUserIcon').src = `https://ui-avatars.com/api/?name=${firstLetter}&background=3498db&color=fff&rounded=true`;
+
+            // --- FETCH THE USER'S SPECIFIC BOOKS ---
+            try {
+                // Notice how we dynamically insert their Registration Number into the URL
+                const response = await fetch(`http://localhost:3000/api/my-books/${user.reg_number}`);
+                const transactions = await response.json();
+                
+                const tableBody = document.getElementById('myBooksTableBody');
+                tableBody.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #777; padding: 30px;">You haven't borrowed any books yet. Go to 'Search Books' to find your first read!</td></tr>`;
+                    return;
+                }
+
+                // --- BUILD THE TABLE ROWS ---
+                transactions.forEach(trx => {
+                    // Style the status pill
+                    const actionColor = trx.action === 'Issued' ? '#27ae60' : '#3498db';
+                    const actionBg = trx.action === 'Issued' ? '#e8f8f5' : '#e1f0fa';
+                    
+                    const issueDate = new Date(trx.transaction_date).toLocaleDateString();
+
+                    // Complex logic to figure out if they owe money or when it's due
+                    let fineDisplay = '-';
+                    if (trx.action === 'Returned') {
+                        if (trx.fine_amount > 0) {
+                            fineDisplay = `<span style="color: #e74c3c; font-weight: bold;">Paid $${trx.fine_amount} Fine</span>`;
+                        } else {
+                            fineDisplay = `<span style="color: #27ae60;">Returned on time</span>`;
+                        }
+                    } else if (trx.action === 'Issued') {
+                        const dueDate = new Date(trx.due_date);
+                        const today = new Date();
+                        if (today > dueDate) {
+                            fineDisplay = `<span style="color: #e74c3c; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> OVERDUE</span>`;
+                        } else {
+                            fineDisplay = `<span style="color: #777;">Due: ${dueDate.toLocaleDateString()}</span>`;
+                        }
+                    }
+
+                    const row = `
+                        <tr>
+                            <td><strong>${trx.title || 'Unknown Title'}</strong></td>
+                            <td>${trx.author || 'Unknown'}</td>
+                            <td><span class="status-badge" style="background: ${actionBg}; color: ${actionColor};">${trx.action}</span></td>
+                            <td>${issueDate}</td>
+                            <td>${fineDisplay}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error fetching my books:", error);
+                document.getElementById('myBooksTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color: #e74c3c;">Failed to load books. Is the server running?</td></tr>`;
+            }
+        };
+    </script>
+</body>
+</html>
